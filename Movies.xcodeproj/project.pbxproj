@@ -13,6 +13,7 @@
 		526AF8D42E41385800D2ECAF /* PopularMovieCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526AF8D32E41385800D2ECAF /* PopularMovieCard.swift */; };
 		526AF8D62E41387900D2ECAF /* NowPlayingMovieCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526AF8D52E41387900D2ECAF /* NowPlayingMovieCard.swift */; };
 		526AF8D82E4138A800D2ECAF /* TopRatedMovieCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526AF8D72E4138A800D2ECAF /* TopRatedMovieCard.swift */; };
+		526AF8DA2E413D6600D2ECAF /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526AF8D92E413D6600D2ECAF /* NetworkMonitor.swift */; };
 		5289B5F72E2E281C00E81674 /* MoviesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5289B5F62E2E281C00E81674 /* MoviesApp.swift */; };
 		5289B5FB2E2E281D00E81674 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5289B5FA2E2E281D00E81674 /* Assets.xcassets */; };
 		5289B5FE2E2E281E00E81674 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5289B5FD2E2E281E00E81674 /* Preview Assets.xcassets */; };
@@ -53,6 +54,7 @@
 		526AF8D32E41385800D2ECAF /* PopularMovieCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopularMovieCard.swift; sourceTree = "<group>"; };
 		526AF8D52E41387900D2ECAF /* NowPlayingMovieCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMovieCard.swift; sourceTree = "<group>"; };
 		526AF8D72E4138A800D2ECAF /* TopRatedMovieCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopRatedMovieCard.swift; sourceTree = "<group>"; };
+		526AF8D92E413D6600D2ECAF /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		5289B5F32E2E281C00E81674 /* Movies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Movies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5289B5F62E2E281C00E81674 /* MoviesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesApp.swift; sourceTree = "<group>"; };
 		5289B5FA2E2E281D00E81674 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				528C3F072E34FA020073B0ED /* HTTP.swift */,
 				528C3F092E34FB6A0073B0ED /* APIService.swift */,
 				528C3F0B2E34FB8F0073B0ED /* NetworkManager.swift */,
+				526AF8D92E413D6600D2ECAF /* NetworkMonitor.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -437,6 +440,7 @@
 				5289B5F72E2E281C00E81674 /* MoviesApp.swift in Sources */,
 				528DA5662E379C7A001D483A /* DetailsMovieViewModel.swift in Sources */,
 				528DA5752E40B1DE001D483A /* FavoriteModel.swift in Sources */,
+				526AF8DA2E413D6600D2ECAF /* NetworkMonitor.swift in Sources */,
 				528C3F0A2E34FB6A0073B0ED /* APIService.swift in Sources */,
 				528DA5682E37F4D4001D483A /* MovieDetailsView.swift in Sources */,
 				528DA5582E3779CE001D483A /* TopRatedListView.swift in Sources */,
@@ -582,6 +586,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -610,6 +615,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -21,9 +21,11 @@ struct MainView: View {
     @StateObject private var navigationManager = NavigationManager()
 
     var body: some View {
-        NavigationStack(path: $navigationManager.path) {
-            HomeView()
-                .environmentObject(navigationManager)
-        }
+        HomeView()
+//        NavigationStack(path: $navigationManager.path) {
+//
+//                .environmentObject(navigationManager)
+//        }
     }
 }
+

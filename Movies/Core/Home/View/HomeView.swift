@@ -11,76 +11,98 @@ struct HomeView: View {
     @StateObject var movieVM = MovieViewModel()
     @StateObject var detailsVM = DetailsViewModel()
     @StateObject private var navigationManager = NavigationManager()
+    @StateObject private var networkMonitor = NetworkMonitor()
     @State private var showDetails = false
     @State var textSearch: String = ""
     
     var body: some View {
         NavigationStack(path: $navigationManager.path) {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 25) {
-                    // Search Bar
-                    searchBarView
-                    
-                    // Now Playing Section
-                    VStack(alignment: .leading, spacing: 15) {
-                        CustomHeadLine(
-                            headLine: "Now Playing",
-                            onSeeAll: {
-                                navigationManager.navigateToAllMovies(category: "Now Playing")
-                            }
-                        )
-                        NowPlayingViewItem(
-                            nowPlayingModel: movieVM.nowPlayingMovie,
-                            onMovieSelected: { movieId in
-                                navigationManager.navigateToMovieDetails(movieId)
-                            }
-                        )
-                    }
-                    
-                    // Top Rated Section
-                    VStack(alignment: .leading, spacing: 15) {
-                        CustomHeadLine(
-                            headLine: "Top Rated",
-                            onSeeAll: {
-                                navigationManager.navigateToAllMovies(category: "Top Rated")
-                            }
-                        )
-                        TopRatedListView(
-                            topRatedMovie: movieVM.topRatedMovie,
-                            onMovieSelected: { movieId in
-                                navigationManager.navigateToMovieDetails(movieId)
-                            }
-                        )
-                    }
-                    
-                    // Popular Section
-                    VStack(alignment: .leading, spacing: 15) {
-                        CustomHeadLine(
-                            headLine: "Popular",
-                            onSeeAll: {
-                                navigationManager.navigateToAllMovies(category: "Popular")
-                            }
-                        )
-                        PopularListItemMovie(
-                            popularMovie: movieVM.popularMovie,
-                            onMovieSelected: { movieId in
-                                navigationManager.navigateToMovieDetails(movieId)
-                            }
-                        )
+            if networkMonitor.isConnected {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 25) {
+                        // Search Bar
+                        searchBarView
+                        
+                        // Now Playing Section
+                        VStack(alignment: .leading, spacing: 15) {
+                            CustomHeadLine(
+                                headLine: "Now Playing",
+                                onSeeAll: {
+                                    navigationManager.navigateToAllMovies(category: "Now Playing")
+                                }
+                            )
+                            NowPlayingViewItem(
+                                nowPlayingModel: movieVM.nowPlayingMovie,
+                                onMovieSelected: { movieId in
+                                    navigationManager.navigateToMovieDetails(movieId)
+                                }
+                            )
+                        }
+                        
+                        // Top Rated Section
+                        VStack(alignment: .leading, spacing: 15) {
+                            CustomHeadLine(
+                                headLine: "Top Rated",
+                                onSeeAll: {
+                                    navigationManager.navigateToAllMovies(category: "Top Rated")
+                                }
+                            )
+                            TopRatedListView(
+                                topRatedMovie: movieVM.topRatedMovie,
+                                onMovieSelected: { movieId in
+                                    navigationManager.navigateToMovieDetails(movieId)
+                                }
+                            )
+                        }
+                        
+                        // Popular Section
+                        VStack(alignment: .leading, spacing: 15) {
+                            CustomHeadLine(
+                                headLine: "Popular",
+                                onSeeAll: {
+                                    navigationManager.navigateToAllMovies(category: "Popular")
+                                }
+                            )
+                            PopularListItemMovie(
+                                popularMovie: movieVM.popularMovie,
+                                onMovieSelected: { movieId in
+                                    navigationManager.navigateToMovieDetails(movieId)
+                                }
+                            )
+                        }
                     }
                 }
                 .padding()
-            }
-            .background(Color("primary"))
-            .ignoresSafeArea()
-            .navigationBarHidden(true)
-            .navigationDestination(for: NavigationManager.Destination.self) { destination in
-                destinationView(for: destination)
+                .ignoresSafeArea()
+                .navigationBarHidden(true)
+                .navigationDestination(for: NavigationManager.Destination.self) { destination in
+                    destinationView(for: destination)
+                }
+                .background(Color("primary"))
+            } else {
+                Text("❌ لا يوجد اتصال بالإنترنت")
+                   .foregroundColor(.red)
+                   .padding(.top, 50)
+                   .font(.title3)
             }
         }
-        .task {
-            await loadInitialData()
+    .onAppear {
+            if networkMonitor.isConnected {
+                Task {
+                    await loadInitialData()
+                }
+            }
         }
+        .onChange(of: networkMonitor.isConnected) { isConnected in
+            if isConnected {
+                Task {
+                    await loadInitialData()
+                }
+            }
+        }
+//        .task {
+//            await loadInitialData()
+//        }
     }
     
     @ViewBuilder
