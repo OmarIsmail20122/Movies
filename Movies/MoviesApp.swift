@@ -11,7 +11,11 @@ import SwiftUI
 struct MoviesApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                HomeView()
+            }
+            .toolbarBackground(Color("primary"), for: .navigationBar) // custom nav color
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 }
