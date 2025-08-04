@@ -11,11 +11,19 @@ import SwiftUI
 struct MoviesApp: App {
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                HomeView()
-            }
-            .toolbarBackground(Color("primary"), for: .navigationBar) // custom nav color
-            .toolbarBackground(.visible, for: .navigationBar)
+            MainView()
+        }
+    }
+}
+
+
+struct MainView: View {
+    @StateObject private var navigationManager = NavigationManager()
+
+    var body: some View {
+        NavigationStack(path: $navigationManager.path) {
+            HomeView()
+                .environmentObject(navigationManager)
         }
     }
 }

@@ -10,40 +10,141 @@ import SwiftUI
 struct HomeView: View {
     @StateObject var movieVM = MovieViewModel()
     @StateObject var detailsVM = DetailsViewModel()
+    @StateObject private var navigationManager = NavigationManager()
     @State private var showDetails = false
-    @State var textSearch : String = ""
+    @State var textSearch: String = ""
+    
     var body: some View {
-            ScrollView(.vertical , showsIndicators: false){
-                VStack (alignment: .leading,spacing : 25){
-                    ZStack(alignment: .trailing){
-                        HStack(spacing : 10) {
-                            Image("search")
-                            TextField("Search", text: $textSearch)
-                                .foregroundColor(Color("white"))
-                                .frame(height: 50)
-                        }
-                        .padding(.horizontal , 10)
-                        .background(Color(.black))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        Button(action: {}) {
-                            Image("filter")
-                        }
-                        .padding()
+        NavigationStack(path: $navigationManager.path) {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 25) {
+                    // Search Bar
+                    searchBarView
+                    
+                    // Now Playing Section
+                    VStack(alignment: .leading, spacing: 15) {
+                        CustomHeadLine(
+                            headLine: "Now Playing",
+                            onSeeAll: {
+                                navigationManager.navigateToAllMovies(category: "Now Playing")
+                            }
+                        )
+                        NowPlayingViewItem(
+                            nowPlayingModel: movieVM.nowPlayingMovie,
+                            onMovieSelected: { movieId in
+                                navigationManager.navigateToMovieDetails(movieId)
+                            }
+                        )
                     }
-                    .padding(.top , 30)
-                    CustomeHeadLine(headLine: "Now Playing")
-                    NowPlayingViewItem(nowPlayingModel: movieVM.nowPlayingMovie)
                     
-                    CustomeHeadLine(headLine: "Top Rated")
-                    TopRatedListView(topRatedMovie: movieVM.topRatedMovie)
+                    // Top Rated Section
+                    VStack(alignment: .leading, spacing: 15) {
+                        CustomHeadLine(
+                            headLine: "Top Rated",
+                            onSeeAll: {
+                                navigationManager.navigateToAllMovies(category: "Top Rated")
+                            }
+                        )
+                        TopRatedListView(
+                            topRatedMovie: movieVM.topRatedMovie,
+                            onMovieSelected: { movieId in
+                                navigationManager.navigateToMovieDetails(movieId)
+                            }
+                        )
+                    }
                     
-                    CustomeHeadLine(headLine: "Popular")
-                    PopularListItemMovie(popularMovie: movieVM.popularMovie)
+                    // Popular Section
+                    VStack(alignment: .leading, spacing: 15) {
+                        CustomHeadLine(
+                            headLine: "Popular",
+                            onSeeAll: {
+                                navigationManager.navigateToAllMovies(category: "Popular")
+                            }
+                        )
+                        PopularListItemMovie(
+                            popularMovie: movieVM.popularMovie,
+                            onMovieSelected: { movieId in
+                                navigationManager.navigateToMovieDetails(movieId)
+                            }
+                        )
+                    }
                 }
                 .padding()
             }
-        .background(Color("primary"))
-        .ignoresSafeArea()
+            .background(Color("primary"))
+            .ignoresSafeArea()
+            .navigationBarHidden(true)
+            .navigationDestination(for: NavigationManager.Destination.self) { destination in
+                destinationView(for: destination)
+            }
+        }
+        .task {
+            await loadInitialData()
+        }
+    }
+    
+    @ViewBuilder
+    private func destinationView(for destination: NavigationManager.Destination) -> some View {
+        switch destination {
+        case .movieDetails(let movieId):
+            MovieDetailsView(movieId: movieId)
+                .environmentObject(navigationManager)
+        case .allMovies(let category):
+            AllMovieView(title: category)
+                .environmentObject(navigationManager)
+        case .search:
+            SearchView()
+                .environmentObject(navigationManager)
+        case .favorites:
+            FavoritesView()
+                .environmentObject(navigationManager)
+        }
+    }
+    
+    private var searchBarView: some View {
+        ZStack(alignment: .trailing) {
+            HStack(spacing: 10) {
+                Image("search")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
+                    .foregroundColor(.white.opacity(0.7))
+                
+                TextField("Search", text: $textSearch)
+                    .foregroundColor(Color("white"))
+                    .frame(height: 50)
+                    .onSubmit {
+                        if !textSearch.isEmpty {
+                            navigationManager.navigateToSearch()
+                        }
+                    }
+            }
+            .padding(.horizontal, 15)
+            .background(Color.black.opacity(0.6))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            
+            Button(action: {
+                // Handle filter action
+            }) {
+                Image("filter")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.white)
+            }
+            .padding(.trailing, 15)
+        }
+        .padding(.top, 30)
+    }
+    
+    private func loadInitialData() async {
+        async let nowPlaying: () = movieVM.fetchNowPlayingMovies()
+        async let topRated: () = movieVM.fetchTopRatedMovies()
+        async let popular: () = movieVM.fetchPopularMovies()
+        
+        await nowPlaying
+        await topRated
+        await popular
     }
 }
 
@@ -52,3 +153,4 @@ struct HomeView_Previews: PreviewProvider {
         HomeView()
     }
 }
+

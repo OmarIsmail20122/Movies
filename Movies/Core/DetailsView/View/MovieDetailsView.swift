@@ -7,8 +7,7 @@
 
 import SwiftUI
 struct MovieDetailsView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject private var navigationManager: NavigationManager
     let movieId: Int
     @StateObject var detailsVM = DetailsViewModel()
     @State private var showingShareSheet = false
@@ -29,7 +28,7 @@ struct MovieDetailsView: View {
                 VStack(spacing: 15) {
                     // Custom Navigation Bar
                     CustomNavigationBar(
-                        onBack: { handleBackNavigation() },
+                        onBack: { navigationManager.pop() },
                         onShare: { showingShareSheet = true },
                         onFavorite: { detailsVM.toggleFavorite() },
                         isFavorite: detailsVM.isFavorite
@@ -44,7 +43,7 @@ struct MovieDetailsView: View {
                             VStack(alignment: .leading, spacing: 25) {
                                 // Genres and Rating
                                 GenresAndRatingSection(movie: detailsVM.detailsMovie)
-                            
+                                
                                 // Title and Release Info
                                 TitleSection(
                                     movie: detailsVM.detailsMovie,
@@ -60,7 +59,7 @@ struct MovieDetailsView: View {
                                 
                                 // Production Companies
                                 ProductionCompaniesSection(movie: detailsVM.detailsMovie)
-                            
+                                
                                 // Action Buttons
                                 ActionButtonsSection(
                                     onWatchTrailer: { detailsVM.openTrailer() },
@@ -84,14 +83,6 @@ struct MovieDetailsView: View {
         }
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(shareText: detailsVM.shareMovie())
-        }
-    }
-    
-    private func handleBackNavigation() {
-        if presentationMode.wrappedValue.isPresented {
-            presentationMode.wrappedValue.dismiss()
-        } else {
-            dismiss()
         }
     }
 }

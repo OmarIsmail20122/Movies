@@ -8,22 +8,47 @@
 import SwiftUI
 
 struct NowPlayingViewItem: View {
-    let nowPlayingModel : [MovieModel]
+    let nowPlayingModel: [MovieModel]
+    let onMovieSelected: (Int) -> Void
+    
     var body: some View {
-        
-        ScrollView(.horizontal ,showsIndicators: false) {
-                HStack(spacing: 25) {
-                    ForEach(nowPlayingModel.prefix(5)) { data in
-                        NavigationLink(value: data.id, label: {
-                            CustomeImageIndicator(image: data.posterURL , title: data.title , overview: data.overview , releaseDate: data.release_date , language: data.original_language , vote: data.vote_average )
-                                .frame(width: UIScreen.main.bounds.width - 100, height: 150)
-                        })
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: 15) {
+                ForEach(nowPlayingModel.prefix(5)) { movie in
+                    Button {
+                        onMovieSelected(movie.id)
+                    } label: {
+                        NowPlayingMovieCard(movie: movie)
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .navigationDestination(for: Int.self) {
-                    movieID in
-                    MovieDetailsView(movieId: movieID).navigationBarBackButtonHidden(true)
-                }
+            }
+            .padding(.horizontal)
         }
     }
 }
+
+
+
+
+
+@ViewBuilder
+func ShimmerEffect(width: Double, height: Double) -> some View {
+    ShimmerView()
+        .frame(width: width, height: height)
+        .cornerRadius(12)
+}
+
+func formatDate(_ dateString: String) -> String {
+    let inputFormatter = DateFormatter()
+    inputFormatter.dateFormat = "yyyy-MM-dd"
+    
+    let outputFormatter = DateFormatter()
+    outputFormatter.dateFormat = "MMM yyyy"
+    
+    if let date = inputFormatter.date(from: dateString) {
+        return outputFormatter.string(from: date)
+    }
+    return dateString
+}
+

@@ -57,16 +57,6 @@ class DetailsViewModel: ObservableObject {
         isLoading = false
     }
     
-//    // MARK: - Additional Data Loading
-//    private func loadAdditionalData(movieId: Int) async {
-//        async let videos = fetchMovieVideos(movieId: movieId)
-//        async let credits = fetchMovieCredits(movieId: movieId)
-//        async let similar = fetchSimilarMovies(movieId: movieId)
-//        async let reviews = fetchMovieReviews(movieId: movieId)
-//
-//        let _ = await (videos, credits, similar, reviews)
-//    }
-    
     // MARK: - Fetch Movie Videos/Trailers
     func fetchMovieVideos(movieId: Int) async {
         guard let url = URL(string: "\(NetworkEndPoint.url)\(movieId)/videos") else { return }
@@ -137,7 +127,7 @@ class DetailsViewModel: ObservableObject {
         if isInWatchlist {
             let watchlistMovie = WatchlistMovie(
                 id: movie.id,
-                title: movie.title ?? "",
+                title: movie.title ,
                 posterPath: movie.poster_path,
                 releaseDate: movie.release_date,
                 overview: movie.overview
@@ -226,7 +216,7 @@ class DetailsViewModel: ObservableObject {
         
         let title = movie.title
         let rating = movie.vote_average
-        let year = movie.release_date.prefix(4) ?? "Unknown"
+        let year = movie.release_date.prefix(4)
         
         return "Check out \"\(title)\" (\(year)) - Rated \(String(format: "%.1f", rating))/10 ⭐"
     }
@@ -245,30 +235,3 @@ class DetailsViewModel: ObservableObject {
         print("DetailsViewModel Error: \(error)")
     }
 }
-
-//@MainActor
-//class DetailsViewModel : ObservableObject {
-//    @Published var detailsMovie : DetailsModel?
-//    @Published var errorMessage : String?
-//    @Published var isLoading : Bool = false
-//
-//    func getMovieDetailsID(movieId : Int) async {
-//        isLoading = true
-//        errorMessage = nil
-//
-//        guard let url = URL(string: "\(NetworkEndPoint.url)\(movieId)") else {
-//            errorMessage = NetworkError.invalidURL.localizedDescription
-//            return
-//        }
-//        do {
-//            let response  = try await NetworkManager.shared.request(url: url, headers: NetworkEndPoint.headers ,responseType: DetailsModel.self )
-//            self.detailsMovie = response
-//            print(detailsMovie!)
-//
-//
-//        } catch {
-//            self.errorMessage = error.localizedDescription
-//        }
-//    }
-//
-//}

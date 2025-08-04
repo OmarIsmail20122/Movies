@@ -8,26 +8,24 @@
 import SwiftUI
 
 struct TopRatedListView: View {
-    let topRatedMovie : [MovieModel]
+    let topRatedMovie: [MovieModel]
+    let onMovieSelected: (Int) -> Void
+    
     var body: some View {
-        NavigationStack {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 25) {
-                    ForEach(topRatedMovie.prefix(5)) { topRated in
-                        NavigationLink(value: topRated.id) {
-                            CustomeItemList(
-                                title: topRated.title,
-                                vote: topRated.vote_average,
-                                image: topRated.posterURL
-                            )
-                        }
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: 12) {
+                ForEach(topRatedMovie.prefix(5)) { movie in
+                    Button {
+                        onMovieSelected(movie.id)
+                    } label: {
+                        TopRatedMovieCard(movie: movie)
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .frame(height: 210)
             }
-            .navigationDestination(for: Int.self) { movieId in
-                MovieDetailsView(movieId: movieId).navigationBarBackButtonHidden(true)
-            }
+            .padding(.horizontal)
         }
     }
 }
+
+
