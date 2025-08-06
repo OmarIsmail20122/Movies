@@ -355,22 +355,23 @@ struct ProductionCompanyCard: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            Group {
-                if let logoPath = company.productionLogo, !logoPath.isEmpty {
-                    PosterImage(image: logoPath, width: 80, height: 80)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                } else {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color("tableColor"))
-                        .frame(width: 80, height: 80)
-                        .overlay(
-                            Image(systemName: "building.2")
-                                .foregroundColor(.gray)
-                                .font(.title2)
-                        )
-                }
-            }
+            PosterImage(image: company.productionLogo , width: 80, height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+//            Group {
+//                if let logoPath = company.productionLogo, !logoPath.isEmpty {
+//
+//                } else {
+//                    RoundedRectangle(cornerRadius: 12)
+//                        .fill(Color("tableColor"))
+//                        .frame(width: 80, height: 80)
+//                        .overlay(
+//                            Image(systemName: "building.2")
+//                                .foregroundColor(.gray)
+//                                .font(.title2)
+//                        )
+//                }
+//            }
             
             Text(company.name)
                 .font(.caption)
