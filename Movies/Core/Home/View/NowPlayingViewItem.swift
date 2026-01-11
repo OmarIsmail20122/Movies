@@ -47,7 +47,7 @@ func formatDate(_ dateString: String) -> String {
     outputFormatter.dateFormat = "MMM yyyy"
     
     if let date = inputFormatter.date(from: dateString) {
-        return outputFormatter.string(from: date)
+        return outputFormatter.string(from: date )
     }
     return dateString
 }

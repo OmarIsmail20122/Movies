@@ -108,7 +108,7 @@ struct CustomeImageIndicator: View {
 @ViewBuilder
 func ShimmerEffect(width : Double) -> some View {
     ShimmerView()
-        .frame(width: width ,height: 150)
+        .frame(maxWidth: width ,maxHeight:  150)
         .cornerRadius(10)
 }
 

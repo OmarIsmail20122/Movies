@@ -18,14 +18,9 @@ struct MoviesApp: App {
 
 
 struct MainView: View {
-    @StateObject private var navigationManager = NavigationManager()
-
+    @StateObject var movieVM = MovieViewModel()
     var body: some View {
-        HomeView()
-//        NavigationStack(path: $navigationManager.path) {
-//
-//                .environmentObject(navigationManager)
-//        }
+        HomeView(movieVM: movieVM)
     }
 }
 

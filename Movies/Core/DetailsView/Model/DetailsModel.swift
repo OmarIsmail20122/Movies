@@ -53,3 +53,8 @@ struct ProductionCompanies : Decodable , Identifiable {
     }
     
 }
+
+
+struct GenresResponse: Decodable {
+    let genres: [Genre]
+}

@@ -90,10 +90,10 @@ func PosterImage(image : String , width : Double , height : Double) -> some View
                 .cornerRadius(10)
 
         case .empty:
-            ShimmerEffect(width: 120)
+            ShimmerEffect(width: .infinity)
 
         @unknown default:
-            ShimmerEffect(width: 120)
+            ShimmerEffect(width: .infinity)
         }
     }
     .padding(.horizontal , 20)

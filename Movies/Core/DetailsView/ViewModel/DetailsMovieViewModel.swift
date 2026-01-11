@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 
 @MainActor
 class DetailsViewModel: ObservableObject {
@@ -14,18 +15,26 @@ class DetailsViewModel: ObservableObject {
     @Published var detailsMovie: DetailsModel?
     @Published var errorMessage: String?
     @Published var isLoading: Bool = false
-    @Published var isFavorite: Bool = false
-    @Published var isInWatchlist: Bool = false
     @Published var movieVideos: [MovieVideo] = []
     @Published var movieCredits: MovieCredits?
     @Published var similarMovies: [MovieModel] = []
     @Published var movieReviews: [Review] = []
     @Published var showFullOverview: Bool = false
+    @Published var showAddedAlert: Bool = false
+    @Published var lastAddedMovieTitle: String = ""
+    
+    // MARK: - Dependencies
+    let favoritesViewModel: FavoritesViewModel
+//    let watchlistViewModel: WatchlistViewModel
     
     // MARK: - Private Properties
-    private let favoritesKey = "FavoriteMovies"
-    private let watchlistKey = "WatchlistMovies"
     private var currentMovieId: Int = 0
+    
+    // MARK: - Initialization
+    init(favoritesViewModel: FavoritesViewModel? = nil) {
+        self.favoritesViewModel = favoritesViewModel ?? FavoritesViewModel()
+//        self.watchlistViewModel = watchlistViewModel ?? WatchlistViewModel()
+    }
     
     // MARK: - Main Data Fetching
     func getMovieDetailsID(movieId: Int) async {
@@ -33,8 +42,8 @@ class DetailsViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        guard let url = URL(string: "\(NetworkEndPoint.url)\(movieId)") else {
-            handleError(NetworkError.invalidURL)
+        guard let url = URL(string: "\(NetworkEndPoint.url)movie/\(movieId)") else {
+            errorMessage = NetworkError.invalidURL.localizedDescription
             return
         }
         
@@ -45,9 +54,11 @@ class DetailsViewModel: ObservableObject {
                 responseType: DetailsModel.self
             )
             self.detailsMovie = response
-//            await loadAdditionalData(movieId: movieId)
-            checkFavoriteStatus(movieId: movieId)
-            checkWatchlistStatus(movieId: movieId)
+            
+            // Check favorite and watchlist status
+            favoritesViewModel.checkFavoriteStatus(movieId: movieId)
+//            watchlistViewModel.checkWatchlistStatus(movieId: movieId)
+            
             print("Movie details loaded: \(response.title)")
             
         } catch {
@@ -59,7 +70,7 @@ class DetailsViewModel: ObservableObject {
     
     // MARK: - Fetch Movie Videos/Trailers
     func fetchMovieVideos(movieId: Int) async {
-        guard let url = URL(string: "\(NetworkEndPoint.url)\(movieId)/videos") else { return }
+        guard let url = URL(string: "\(NetworkEndPoint.url)movie/\(movieId)/videos") else { return }
         
         do {
             let response = try await NetworkManager.shared.request(
@@ -73,90 +84,52 @@ class DetailsViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Favorite Management
+    // MARK: - Favorite & Watchlist Actions
     func toggleFavorite() {
         guard let movie = detailsMovie else { return }
         
-        isFavorite.toggle()
+        let favoriteMovie = FavoriteMovie(
+            id: movie.id,
+            title: movie.title,
+            posterPath: movie.poster_path,
+            releaseDate: movie.release_date,
+            rating: movie.vote_average
+        )
         
-        var favorites = getFavoriteMovies()
+        let wasInFavorites = favoritesViewModel.isFavorite
+        favoritesViewModel.toggleFavorite(movie: favoriteMovie)
         
-        if isFavorite {
-            let favoriteMovie = FavoriteMovie(
-                id: movie.id,
-                title: movie.title ,
-                posterPath: movie.poster_path,
-                releaseDate: movie.release_date,
-                rating: movie.vote_average
-            )
-            favorites.append(favoriteMovie)
-        } else {
-            favorites.removeAll { $0.id == movie.id }
-        }
-        
-        saveFavoriteMovies(favorites)
-    }
-    
-    func checkFavoriteStatus(movieId: Int) {
-        let favorites = getFavoriteMovies()
-        isFavorite = favorites.contains { $0.id == movieId }
-    }
-    
-    private func getFavoriteMovies() -> [FavoriteMovie] {
-        guard let data = UserDefaults.standard.data(forKey: favoritesKey),
-              let favorites = try? JSONDecoder().decode([FavoriteMovie].self, from: data) else {
-            return []
-        }
-        return favorites
-    }
-    
-    private func saveFavoriteMovies(_ favorites: [FavoriteMovie]) {
-        if let data = try? JSONEncoder().encode(favorites) {
-            UserDefaults.standard.set(data, forKey: favoritesKey)
+        // Show toast only when adding (not removing)
+        if !wasInFavorites {
+            lastAddedMovieTitle = movie.title
+            showAddedAlert = true
         }
     }
     
-    // MARK: - Watchlist Management
     func toggleWatchlist() {
         guard let movie = detailsMovie else { return }
         
-        isInWatchlist.toggle()
+        let watchlistMovie = WatchlistMovie(
+            id: movie.id,
+            title: movie.title,
+            posterPath: movie.poster_path,
+            releaseDate: movie.release_date,
+            overview: movie.overview
+        )
         
-        var watchlist = getWatchlistMovies()
-        
-        if isInWatchlist {
-            let watchlistMovie = WatchlistMovie(
-                id: movie.id,
-                title: movie.title ,
-                posterPath: movie.poster_path,
-                releaseDate: movie.release_date,
-                overview: movie.overview
-            )
-            watchlist.append(watchlistMovie)
-        } else {
-            watchlist.removeAll { $0.id == movie.id }
-        }
-        
-        saveWatchlistMovies(watchlist)
+//        watchlistViewModel.toggleWatchlist(movie: watchlistMovie)
     }
     
-    func checkWatchlistStatus(movieId: Int) {
-        let watchlist = getWatchlistMovies()
-        isInWatchlist = watchlist.contains { $0.id == movieId }
+    // MARK: - Toast Alert Bindings
+    var shouldShowFavoriteAlert: Binding<Bool> {
+        Binding(
+            get: { self.showAddedAlert },
+            set: { self.showAddedAlert = $0 }
+        )
     }
     
-    private func getWatchlistMovies() -> [WatchlistMovie] {
-        guard let data = UserDefaults.standard.data(forKey: watchlistKey),
-              let watchlist = try? JSONDecoder().decode([WatchlistMovie].self, from: data) else {
-            return []
-        }
-        return watchlist
-    }
-    
-    private func saveWatchlistMovies(_ watchlist: [WatchlistMovie]) {
-        if let data = try? JSONEncoder().encode(watchlist) {
-            UserDefaults.standard.set(data, forKey: watchlistKey)
-        }
+    var addedMovieTitle: String {
+        lastAddedMovieTitle
     }
     
     // MARK: - Utility Functions

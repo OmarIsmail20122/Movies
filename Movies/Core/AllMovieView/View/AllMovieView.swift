@@ -15,7 +15,6 @@ struct AllMovieView: View {
     var body: some View {
         VStack(spacing: 0) {
             headerView
-            
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 10) {
                     ForEach(selectedMovies) { movie in

@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject var movieVM = MovieViewModel()
-    @StateObject var detailsVM = DetailsViewModel()
+    @ObservedObject var movieVM : MovieViewModel
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var networkMonitor = NetworkMonitor()
     @State private var showDetails = false
@@ -18,75 +17,87 @@ struct HomeView: View {
     var body: some View {
         NavigationStack(path: $navigationManager.path) {
             if networkMonitor.isConnected {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 25) {
-                        // Search Bar
-                        searchBarView
-                        
-                        // Now Playing Section
-                        VStack(alignment: .leading, spacing: 15) {
-                            CustomHeadLine(
-                                headLine: "Now Playing",
-                                onSeeAll: {
-                                    navigationManager.navigateToAllMovies(category: "Now Playing")
-                                }
-                            )
-                            NowPlayingViewItem(
-                                nowPlayingModel: movieVM.nowPlayingMovie,
-                                onMovieSelected: { movieId in
-                                    navigationManager.navigateToMovieDetails(movieId)
-                                }
-                            )
-                        }
-                        
-                        // Top Rated Section
-                        VStack(alignment: .leading, spacing: 15) {
-                            CustomHeadLine(
-                                headLine: "Top Rated",
-                                onSeeAll: {
-                                    navigationManager.navigateToAllMovies(category: "Top Rated")
-                                }
-                            )
-                            TopRatedListView(
-                                topRatedMovie: movieVM.topRatedMovie,
-                                onMovieSelected: { movieId in
-                                    navigationManager.navigateToMovieDetails(movieId)
-                                }
-                            )
-                        }
-                        
-                        // Popular Section
-                        VStack(alignment: .leading, spacing: 15) {
-                            CustomHeadLine(
-                                headLine: "Popular",
-                                onSeeAll: {
-                                    navigationManager.navigateToAllMovies(category: "Popular")
-                                }
-                            )
-                            PopularListItemMovie(
-                                popularMovie: movieVM.popularMovie,
-                                onMovieSelected: { movieId in
-                                    navigationManager.navigateToMovieDetails(movieId)
-                                }
-                            )
+                ZStack (alignment: .bottomTrailing){
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 25) {
+                            // Search Bar
+                            searchBarView
+                            
+                            // Now Playing Section
+                            VStack(alignment: .leading, spacing: 15) {
+                                CustomHeadLine(
+                                    headLine: "Now Playing",
+                                    onSeeAll: {
+                                        navigationManager.navigateToAllMovies(category: "Now Playing")
+                                    }
+                                )
+                                NowPlayingViewItem(
+                                    nowPlayingModel: movieVM.nowPlayingMovie,
+                                    onMovieSelected: { movieId in
+                                        navigationManager.navigateToMovieDetails(movieId)
+                                    }
+                                )
+                            }
+                            
+                            // Top Rated Section
+                            VStack(alignment: .leading, spacing: 15) {
+                                CustomHeadLine(
+                                    headLine: "Top Rated",
+                                    onSeeAll: {
+                                        navigationManager.navigateToAllMovies(category: "Top Rated")
+                                    }
+                                )
+                                TopRatedListView(
+                                    topRatedMovie: movieVM.topRatedMovie,
+                                    onMovieSelected: { movieId in
+                                        navigationManager.navigateToMovieDetails(movieId)
+                                    }
+                                )
+                            }
+                            
+                            // Popular Section
+                            VStack(alignment: .leading, spacing: 15) {
+                                CustomHeadLine(
+                                    headLine: "Popular",
+                                    onSeeAll: {
+                                        navigationManager.navigateToAllMovies(category: "Popular")
+                                    }
+                                )
+                                PopularListItemMovie(
+                                    popularMovie: movieVM.popularMovie,
+                                    onMovieSelected: { movieId in
+                                        navigationManager.navigateToMovieDetails(movieId)
+                                    }
+                                )
+                            }
                         }
                     }
+                    Button(action: {
+                        navigationManager.navigateToFavorites()
+                    }, label: {
+                        Image(systemName: "heart")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding()
+                    })
+                    .background(Color.red)
+                    .clipShape(Circle())
                 }
                 .padding()
                 .ignoresSafeArea()
                 .navigationBarHidden(true)
                 .navigationDestination(for: NavigationManager.Destination.self) { destination in
-                    destinationView(for: destination)
+                    destinationView(for: destination, navigationManager: navigationManager)
                 }
                 .background(Color("primary"))
             } else {
                 Text("❌ لا يوجد اتصال بالإنترنت")
-                   .foregroundColor(.red)
-                   .padding(.top, 50)
-                   .font(.title3)
+                    .foregroundColor(.red)
+                    .padding(.top, 50)
+                    .font(.title3)
             }
         }
-    .onAppear {
+        .onAppear {
             if networkMonitor.isConnected {
                 Task {
                     await loadInitialData()
@@ -100,28 +111,9 @@ struct HomeView: View {
                 }
             }
         }
-//        .task {
-//            await loadInitialData()
-//        }
     }
     
-    @ViewBuilder
-    private func destinationView(for destination: NavigationManager.Destination) -> some View {
-        switch destination {
-        case .movieDetails(let movieId):
-            MovieDetailsView(movieId: movieId)
-                .environmentObject(navigationManager)
-        case .allMovies(let category):
-            AllMovieView(title: category)
-                .environmentObject(navigationManager)
-        case .search:
-            SearchView()
-                .environmentObject(navigationManager)
-        case .favorites:
-            FavoritesView()
-                .environmentObject(navigationManager)
-        }
-    }
+    
     
     private var searchBarView: some View {
         ZStack(alignment: .trailing) {
@@ -135,10 +127,8 @@ struct HomeView: View {
                 TextField("Search", text: $textSearch)
                     .foregroundColor(Color("white"))
                     .frame(height: 50)
-                    .onSubmit {
-                        if !textSearch.isEmpty {
-                            navigationManager.navigateToSearch()
-                        }
+                    .onTapGesture {
+                        navigationManager.navigateToSearch()
                     }
             }
             .padding(.horizontal, 15)
@@ -170,9 +160,27 @@ struct HomeView: View {
     }
 }
 
+@ViewBuilder
+func destinationView(for destination: NavigationManager.Destination , navigationManager : NavigationManager) -> some View {
+    switch destination {
+    case .movieDetails(let movieId):
+        MovieDetailsView(movieId: movieId)
+            .environmentObject(navigationManager)
+    case .allMovies(let category):
+        AllMovieView(title: category)
+            .environmentObject(navigationManager)
+    case .search:
+        SearchView()
+            .environmentObject(navigationManager)
+    case .favorites:
+        FavoritesView()
+            .environmentObject(navigationManager)
+    }
+}
+
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView()
+        HomeView(movieVM: MovieViewModel())
     }
 }
 
